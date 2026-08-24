@@ -11,9 +11,11 @@ You are performing a maintenance triage on an open-source repository. Work in ph
 
 1. Run `repo_health_check` for the target repo to get the baseline.
 2. In parallel (use subagents — one per concern), investigate:
-   - **CI**: `get_ci_status` — which workflows fail on the default branch?
+   - **CI**: `get_ci_status` + `classify_ci_failures` — which runs fail, and do they look flaky or broken?
    - **Stale issues**: `list_stale_issues` — anything untouched for 30+ days with 0 comments is a candidate for a friendly status ping.
    - **README rot**: `check_readme_links` — every dead link is a finding.
+   - **Dependencies**: `audit_dependencies` — deprecated packages and majors-behind.
+   - **Community health**: `check_community_health` — missing LICENSE/CONTRIBUTING/CoC/templates are findings too.
 
 ## Phase 2 — Verify (sandbox)
 
@@ -29,10 +31,11 @@ You are performing a maintenance triage on an open-source repository. Work in ph
 
 ## Phase 4 — Act (gated writes)
 
-7. Propose the exact write you intend to make (tool + arguments) BEFORE calling it.
-8. Call `file_issue` or `post_comment`. The harness pauses; the operator allows or denies.
-9. If denied: do not retry, do not rephrase. Log it as "declined by operator" and move on.
-10. Never write to a repo outside `REPOMEDIC_ALLOWED_REPOS`; the server refuses it anyway.
+7. Before proposing ANY new issue, run `search_similar_issues` — if a live issue already covers it, propose commenting there instead of filing a duplicate.
+8. Propose the exact write you intend to make (tool + arguments) BEFORE calling it.
+9. Call `file_issue` or `post_comment`. The harness pauses; the operator allows or denies.
+10. If denied: do not retry, do not rephrase. Log it as "declined by operator" and move on.
+11. Never write to a repo outside `REPOMEDIC_ALLOWED_REPOS`; the server refuses it anyway.
 
 ## Style rules
 
