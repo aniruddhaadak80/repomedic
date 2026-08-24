@@ -49,16 +49,24 @@ npx @truefoundry/trueforge
    - **repomedic-tools** (custom server, see below)
 3. **Settings → Sandbox providers** — Daytona, paste your API key.
 
-### 3. Run the RepoMedic MCP server
+### 3. Connect the RepoMedic MCP server
+
+**Hosted (recommended):** the triage tools run at `https://repomedic-gules.vercel.app/mcp`. Under **Settings → Connectors → Add MCP Server**, register that URL with header auth:
+
+```
+x-repomedic-secret: <your REPOMEDIC_MCP_SECRET>
+```
+
+Deploy your own with `vercel deploy --prod` after setting env vars (`GEMINI_API_KEY`, `GITHUB_TOKEN`, `REPOMEDIC_MCP_SECRET`, `REPOMEDIC_ALLOWED_REPOS`). Every `/mcp` request without the secret is rejected 401; `/health` is open.
+
+**Local:**
 
 ```bash
 cd mcp-server
 npm install
 npm run build && npm start
-# Serves the RepoMedic health-check tools on http://localhost:8815/mcp
+# Serves on http://localhost:8815/mcp (open — set REPOMEDIC_MCP_SECRET to lock it down)
 ```
-
-Register it under **Settings → Connectors → Add MCP Server** with URL `http://localhost:8815/mcp`.
 
 ### 4. Import the skill
 
