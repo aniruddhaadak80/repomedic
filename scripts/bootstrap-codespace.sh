@@ -27,15 +27,21 @@ command -v curl >/dev/null || die "curl is required."
 echo "${BOLD}RepoMedic bootstrap${OFF}"
 echo "-------------------"
 
-# ---- secrets (interactive, not stored) ----
-read -rsp "Gemini API key (aistudio.google.com/apikey): " GEMINI_API_KEY; echo
-[[ -n "$GEMINI_API_KEY" ]] || die "Gemini key required."
-read -rsp "GitHub PAT with repo scope (for the triage tools): " GH_TOKEN; echo
-[[ -n "$GH_TOKEN" ]] || die "GitHub PAT required."
+# ---- secrets: prompted when not provided via environment ----
+if [[ -n "${GEMINI_API_KEY:-}" && -n "${REPO_GITHUB_TOKEN:-}" ]]; then
+  say "Secrets found in environment — skipping prompts."
+else
+  read -rsp "Gemini API key (aistudio.google.com/apikey): " GEMINI_API_KEY; echo
+  [[ -n "$GEMINI_API_KEY" ]] || die "Gemini key required."
+  read -rsp "GitHub PAT with repo scope (for the triage tools): " REPO_GITHUB_TOKEN; echo
+  [[ -n "$REPO_GITHUB_TOKEN" ]] || die "GitHub PAT required."
+fi
 read -rp  "Repos RepoMedic may write to, comma-separated [aniruddhaadak80/repomedic]: " ALLOWED
 ALLOWED=${ALLOWED:-aniruddhaadak80/repomedic}
-SECRET="rmc-$(head -c16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
-read -rsp "Daytona API key (optional now, needed for sandbox demos): " DAYTONA_API_KEY; echo
+: "${SECRET:=rmc-$(head -c16 /dev/urandom | od -An -tx1 | tr -d ' \n')}"
+if [[ -z "${DAYTONA_API_KEY:-}" ]]; then
+  read -rsp "Daytona API key (optional now, needed for sandbox demos): " DAYTONA_API_KEY; echo
+fi
 
 # ---- 1. harness ----
 say "Starting TrueForge on :8790 ..."
@@ -47,7 +53,7 @@ curl -sf -o /dev/null "http://localhost:8790" && ok "TrueForge up (pid $TF_PID)"
 # ---- 2. triage tool server ----
 say "Building + starting repomedic-tools on :8815 ..."
 ( cd mcp-server && npm ci --silent && npm run build --silent )
-GITHUB_TOKEN="$GH_TOKEN" \
+GITHUB_TOKEN="$REPO_GITHUB_TOKEN" \
 REPOMEDIC_ALLOWED_REPOS="$ALLOWED" \
 REPOMEDIC_MCP_SECRET="$SECRET" \
 PORT=8815 nohup node mcp-server/dist/index.js > mcp.log 2>&1 &
