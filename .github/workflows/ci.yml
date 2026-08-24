@@ -15,5 +15,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npx tsc -p tsconfig.json --noEmit
       - run: npm run build -w mcp-server
       - run: npm test -w mcp-server

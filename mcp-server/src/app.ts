@@ -49,6 +49,35 @@ export function createApp(): express.Express {
   const app = express();
   app.use(express.json());
 
+  // Human-friendly landing for anyone hitting the deployment root.
+  app.get("/", (_req, res) => {
+    res.json({
+      service: "repomedic-tools",
+      version: "0.1.0",
+      description:
+        "RepoMedic MCP server — autonomous OSS repository triage on the TrueForge agent harness.",
+      hackathon: "The Agent Harness Hackathon (WeMakeDevs × TrueFoundry × Qodo), Aug 24–30 2026",
+      endpoints: {
+        health: "GET /health (open)",
+        mcp: "POST /mcp (requires x-repomedic-secret header when REPOMEDIC_MCP_SECRET is set)",
+      },
+      tools: {
+        read_only: [
+          "repo_health_check",
+          "list_stale_issues",
+          "check_readme_links",
+          "get_ci_status",
+          "classify_ci_failures",
+          "audit_dependencies",
+          "check_community_health",
+          "search_similar_issues",
+        ],
+        approval_gated: ["file_issue", "post_comment"],
+      },
+      repo: "https://github.com/aniruddhaadak80/repomedic",
+    });
+  });
+
   // Stateless streamable-HTTP mode: one transport per request, no session affinity to lose.
   app.post("/mcp", secretGate, async (req: Request, res: Response) => {
     try {
