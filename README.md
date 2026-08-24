@@ -1,5 +1,10 @@
 # RepoMedic 🩺
 
+[![CI](https://github.com/aniruddhaadak80/repomedic/actions/workflows/ci.yml/badge.svg)](https://github.com/aniruddhaadak80/repomedic/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%E2%89%A522.14-green.svg)](https://nodejs.org)
+![Hackathon](https://img.shields.io/badge/The_Agent_Harness_Hackathon-TrueForge-8A2BE2)
+
 > An autonomous open-source repository triage agent, built on [TrueForge](https://github.com/truefoundry/trueforge) — the open-source agent harness — for **The Agent Harness Hackathon** (WeMakeDevs × TrueFoundry × Qodo, Aug 24–30 2026).
 
 RepoMedic is the maintenance agent every maintainer wishes they had: it scans your repositories for real problems — failing CI, broken links in the README, stale issues, vulnerable dependencies — investigates each one in a sandboxed environment with parallel subagents, and then **stops and asks a human before anything irreversible**: no issue is filed, no comment posted, no PR opened until you approve it in the chat.
@@ -24,6 +29,32 @@ RepoMedic is the maintenance agent every maintainer wishes they had: it scans yo
 | **Sessions that survive reconnects** | A triage run survives a browser refresh or server restart |
 | **Skills** | `triage-playbook` SKILL.md teaches RepoMedic *how* to triage like a senior maintainer |
 | **Generative UI** | Triage reports render as cards/charts inline in chat |
+
+## Tool belt
+
+| Tool | Gate | What it does |
+| --- | --- | --- |
+| `repo_health_check` | free | Composite snapshot: issues, stale counts, CI conclusions, README presence |
+| `list_stale_issues` | free | Untouched issues (PRs filtered out), sorted by staleness |
+| `check_readme_links` | free | HEAD→GET link verification with dead-link report |
+| `get_ci_status` | free | Recent workflow runs with conclusions |
+| `classify_ci_failures` | free | Flaky-vs-broken verdict per failing run, with step evidence |
+| `audit_dependencies` | free | Deprecated packages + majors-behind, via npm registry |
+| `check_community_health` | free | LICENSE/CONTRIBUTING/CoC/SECURITY/templates scoring |
+| `search_similar_issues` | free | Dedupe check before proposing a new issue |
+| `file_issue` | 🔒 approval | Opens an issue — pauses for Allow/Deny |
+| `post_comment` | 🔒 approval | Comments on an issue — pauses for Allow/Deny |
+
+## Advanced usage
+
+**Headless night-shift runs** — drive the saved agent through the TrueForge TypeScript SDK instead of the chat UI:
+
+```bash
+cd scripts && npm install
+TRUEFORGE_BASE_URL=http://localhost:8790 node triage.mjs owner/repo
+```
+
+Approval requests stream through the same session — deny one and the agent logs it and moves on.
 
 ## Quickstart
 
@@ -102,10 +133,14 @@ repomedic/
 
 ## Safety model
 
-- **Reads are free.** Scanning issues, CI status, README links — all read-only, no gate.
-- **Writes are gated.** Tools annotated `destructive` in the MCP server trigger TrueForge's human-approval pause automatically (`require_approval_for_tools: ["@write", "@destructive"]`).
-- **Nothing touches repos you don't own.** The PAT you provide defines the blast radius.
-- **Secrets stay out of git.** `.env.example` documents every variable; no key ever lands in this repo or the demo video.
+Four independent layers:
+
+1. **MCP annotations** — writers declare `destructiveHint: true`; scanners `readOnlyHint: true`. Metadata, not enforcement.
+2. **Harness approval policy** — agent spec pins `require_approval_for_tools: ["file_issue", "post_comment"]`; TrueForge freezes the turn until you choose.
+3. **Server-side allow-list** — `GithubClient.assertWriteAllowed` refuses any write outside `REPOMEDIC_ALLOWED_REPOS`, and refuses *all* writes when it's unset. The blast radius equals your config, never the agent's ambition.
+4. **Transport auth** — hosted deployments require the `x-repomedic-secret` header on every `/mcp` call (401 otherwise); `/health` stays open for liveness only.
+
+**Secrets stay out of git** — `.env.example` documents every variable; no key lands in this repo or the demo video.
 
 ## AI-assistance disclosure
 

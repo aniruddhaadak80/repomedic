@@ -1,0 +1,9 @@
+{
+  "name": "repomedic-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Headless drivers for the RepoMedic TrueForge agent.",
+  "dependencies": {
+    "@truefoundry/trueforge-sdk": "^0.1.0"
+  }
+}

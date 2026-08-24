@@ -4,6 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { GithubClient } from "./lib/github.js";
 import { registerScanners } from "./tools/scanners.js";
+import { registerAdvancedTools } from "./tools/advanced.js";
 import { registerWriters } from "./tools/writers.js";
 
 export const SECRET_HEADER = "x-repomedic-secret";
@@ -20,6 +21,7 @@ function buildMcpServer(): McpServer {
   );
 
   registerScanners(server as never, gh);
+  registerAdvancedTools(server as never, gh);
   registerWriters(server as never, gh);
   return server;
 }
