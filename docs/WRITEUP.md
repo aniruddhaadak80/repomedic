@@ -30,7 +30,18 @@ I've authored 800+ pull requests across open source. The bottleneck was never wr
 
 ## Results
 
-(to fill: N repos triaged, M findings, X true positives confirmed manually, cost per run on Gemini Flash, demo video link)
+**Verified live on day one (Aug 24):**
+
+- Custom MCP server deployed to production Vercel, shared-secret gated (401 without header, full MCP session with it)
+- 10-tool belt live: 8 read-only scanners + 2 approval-gated writers
+- Real runs against this very repo:
+  - `repo_health_check` → CI passing, README present
+  - `check_community_health` → 5/8, "good"; correctly identified missing CODE_OF_CONDUCT, issue templates, FUNDING
+  - `audit_dependencies` → flagged express ^4 vs latest 5.x and zod ^3 vs 4.x (kept deliberately for the week; the finding is the point)
+  - `search_similar_issues`, `classify_ci_failures` wired into the dedupe/flaky workflow
+- Test suite: 15/15 green in CI on every PR; two merged PRs with clean review trails
+- Demo video link: (to fill)
+- Blog post link: (to fill)
 
 ## Safety posture
 
