@@ -27,9 +27,20 @@ export class GithubClient {
     }
   }
 
+  /**
+   * Transient statuses worth one more attempt: rate limits (429) and gateway
+   * blips (5xx). 403 is deliberately excluded — it almost always means a real
+   * permission problem, and retrying would just delay the inevitable failure.
+   * (Qodo flagged this in PR #20.)
+   */
+  static isRetryable(status: number): boolean {
+    return status === 429 || (status >= 500 && status <= 504);
+  }
+
   private async request<T>(
     path: string,
     init: RequestInit = {},
+    attempt = 0,
   ): Promise<T> {
     const res = await fetch(`${GITHUB_API}${path}`, {
       ...init,
@@ -41,6 +52,16 @@ export class GithubClient {
         ...(init.headers ?? {}),
       },
     });
+    // One silent retry with short backoff — GETs only. Retrying POST writes
+    // (file_issue / post_comment) risks duplicates when the first attempt
+    // actually succeeded server-side before the error surfaced.
+    // (Qodo flagged this in PR #20.)
+    const method = (init.method ?? "GET").toUpperCase();
+    if (!res.ok && method === "GET" && attempt < 1 && GithubClient.isRetryable(res.status)) {
+      const retryAfter = Number(res.headers.get("retry-after"));
+      await new Promise((s) => setTimeout(s, Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter * 1000, 10_000) : 800));
+      return this.request<T>(path, init, attempt + 1);
+    }
     if (!res.ok) {
       const body = await res.text();
       throw new Error(`GitHub API ${res.status} on ${path}: ${body.slice(0, 400)}`);
