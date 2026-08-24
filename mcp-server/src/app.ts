@@ -4,8 +4,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { GithubClient } from "./lib/github.js";
 import { LANDING_HTML } from "./landing.js";
+import { TOOL_CATALOG } from "./catalog.js";
+import { securityHeaders, rateLimit } from "./middleware.js";
 import { registerScanners } from "./tools/scanners.js";
 import { registerAdvancedTools } from "./tools/advanced.js";
+import { registerInsightTools } from "./tools/insights.js";
 import { registerWriters } from "./tools/writers.js";
 
 export const SECRET_HEADER = "x-repomedic-secret";
@@ -23,6 +26,7 @@ function buildMcpServer(): McpServer {
 
   registerScanners(server as never, gh);
   registerAdvancedTools(server as never, gh);
+  registerInsightTools(server as never, gh);
   registerWriters(server as never, gh);
   return server;
 }
@@ -49,14 +53,25 @@ export function secretGate(req: Request, res: Response, next: NextFunction): voi
 export function createApp(): express.Express {
   const app = express();
   app.use(express.json());
+  app.use(securityHeaders);
 
   // Landing page for anyone hitting the deployment root.
   app.get("/", (_req, res) => {
     res.type("html").send(LANDING_HTML);
   });
 
+  // Machine-readable tool inventory for programmatic inspection.
+  app.get("/tools", (_req, res) => {
+    res.json({
+      service: "repomedic-tools",
+      version: "0.1.0",
+      total: TOOL_CATALOG.length,
+      tools: TOOL_CATALOG,
+    });
+  });
+
   // Stateless streamable-HTTP mode: one transport per request, no session affinity to lose.
-  app.post("/mcp", secretGate, async (req: Request, res: Response) => {
+  app.post("/mcp", rateLimit(), secretGate, async (req: Request, res: Response) => {
     try {
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined,
