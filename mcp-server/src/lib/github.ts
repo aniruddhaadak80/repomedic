@@ -27,9 +27,15 @@ export class GithubClient {
     }
   }
 
+  /** Transient statuses worth one more attempt (secondary rate limits, blips). */
+  static isRetryable(status: number): boolean {
+    return status === 403 || status === 429 || (status >= 500 && status <= 504);
+  }
+
   private async request<T>(
     path: string,
     init: RequestInit = {},
+    attempt = 0,
   ): Promise<T> {
     const res = await fetch(`${GITHUB_API}${path}`, {
       ...init,
@@ -41,6 +47,12 @@ export class GithubClient {
         ...(init.headers ?? {}),
       },
     });
+    // One silent retry with short backoff for transient failures.
+    if (!res.ok && attempt < 1 && GithubClient.isRetryable(res.status)) {
+      const retryAfter = Number(res.headers.get("retry-after"));
+      await new Promise((s) => setTimeout(s, Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter * 1000, 10_000) : 800));
+      return this.request<T>(path, init, attempt + 1);
+    }
     if (!res.ok) {
       const body = await res.text();
       throw new Error(`GitHub API ${res.status} on ${path}: ${body.slice(0, 400)}`);

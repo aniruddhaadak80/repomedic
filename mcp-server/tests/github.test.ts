@@ -43,6 +43,20 @@ describe("GithubClient write guard", () => {
   });
 });
 
+
+describe("GithubClient.isRetryable", () => {
+  it("treats rate limits and 5xx as transient", () => {
+    expect(GithubClient.isRetryable(429)).toBe(true);
+    expect(GithubClient.isRetryable(502)).toBe(true);
+    expect(GithubClient.isRetryable(403)).toBe(true);
+  });
+  it("never retries client errors that are our fault", () => {
+    expect(GithubClient.isRetryable(401)).toBe(false);
+    expect(GithubClient.isRetryable(404)).toBe(false);
+    expect(GithubClient.isRetryable(422)).toBe(false);
+  });
+});
+
 describe("GithubClient.readme", () => {
   it("returns null on 404 without throwing", async () => {
     const gh = new GithubClient("test-token", []);
