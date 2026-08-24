@@ -45,10 +45,10 @@ describe("GithubClient write guard", () => {
 
 
 describe("GithubClient.isRetryable", () => {
-  it("treats rate limits and 5xx as transient", () => {
+  it("treats rate limits and 5xx as transient, but not 403 (real permission errors)", () => {
     expect(GithubClient.isRetryable(429)).toBe(true);
     expect(GithubClient.isRetryable(502)).toBe(true);
-    expect(GithubClient.isRetryable(403)).toBe(true);
+    expect(GithubClient.isRetryable(403)).toBe(false);
   });
   it("never retries client errors that are our fault", () => {
     expect(GithubClient.isRetryable(401)).toBe(false);
