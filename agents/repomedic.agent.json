@@ -1,0 +1,36 @@
+{
+  "$comment": "RepoMedic agent spec for TrueForge (POST /api/v1/agents). Model name assumes the Google provider was configured in Settings → Models; adjust to your catalog FQN.",
+  "name": "repomedic",
+  "manifest": {
+    "model": {
+      "name": "google/gemini-2.5-flash",
+      "params": { "temperature": 0.2, "max_tokens": 8192 }
+    },
+    "instructions": "You are RepoMedic, a repository triage agent for open-source maintainers. You scan repositories the operator owns for real, verifiable problems: failing CI, stale issues, dead README links, and dependency drift. You investigate findings with parallel subagents, verify proposed fixes in the sandbox, and then STOP: no issue is filed and no comment posted until the operator approves it through the approval gate. Follow the triage-playbook skill exactly. Be precise, cite evidence for every finding, never speculate, and never retry a write the operator denied.",
+    "mcp_servers": [
+      {
+        "name": "github",
+        "enable_tools": ["@read-only"],
+        "preload": false
+      },
+      {
+        "name": "repomedic-tools",
+        "enable_tools": ["@all"],
+        "require_approval_for_tools": ["file_issue", "post_comment"],
+        "preload": true
+      }
+    ],
+    "skills": [{ "name": "triage-playbook" }],
+    "config": {
+      "sandbox": { "enabled": true },
+      "generative_ui": { "enabled": true },
+      "ask_user_questions": { "enabled": true },
+      "dynamic_sub_agents": { "enabled": true },
+      "context_management": {
+        "compaction": { "enabled": true },
+        "large_tool_response": { "enabled": true }
+      },
+      "iteration_limit": 80
+    }
+  }
+}
