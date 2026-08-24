@@ -5,8 +5,24 @@
   "license": "MIT",
   "author": "Aniruddha Adak <aniruddhaadak80@gmail.com>",
   "description": "Autonomous OSS repository triage agent built on the TrueForge agent harness — The Agent Harness Hackathon 2026.",
+  "type": "module",
+  "workspaces": [
+    "mcp-server"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "express": "^4.21.2",
+    "zod": "^3.24.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.62.5"
+  },
   "scripts": {
-    "setup": "cd mcp-server && npm install && npm run build"
+    "setup": "npm install && npm run build -w mcp-server && npm test -w mcp-server",
+    "test": "npm test -w mcp-server"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
   },
   "keywords": [
     "agent",
