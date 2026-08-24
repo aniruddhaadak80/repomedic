@@ -80,7 +80,7 @@ export function registerScanners(server: RegistrableServer, gh: GithubClient): v
       },
       annotations: { readOnlyHint: true, openWorldHint: true },
     },
-    async ({ repo, min_stale_days }) => {
+    async ({ repo, min_stale_days = STALE_DAYS_DEFAULT }) => {
       const issues = (await gh.listOpenIssues(repo)).filter(isRealIssue);
       const stale = issues
         .map((i) => ({ number: i.number, title: i.title, url: i.html_url, comments: i.comments, days_stale: daysBetween(i.updated_at) }))
