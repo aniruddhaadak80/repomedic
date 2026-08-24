@@ -5,6 +5,7 @@
   "license": "MIT",
   "author": "Aniruddha Adak <aniruddhaadak80@gmail.com>",
   "description": "Autonomous OSS repository triage agent built on the TrueForge agent harness — The Agent Harness Hackathon 2026.",
+  "type": "module",
   "workspaces": [
     "mcp-server"
   ],
