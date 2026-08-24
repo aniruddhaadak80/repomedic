@@ -68,19 +68,39 @@ export class GithubClient {
   }
 
   async getDefaultBranchReadme(repo: string): Promise<{ text: string } | null> {
+    return this.getRawFile(repo, "README.md");
+  }
+
+  /** Fetches a file from the default branch as raw text, or null when missing. */
+  async getRawFile(repo: string, path: string): Promise<{ text: string } | null> {
     try {
-      const res = await fetch(`${GITHUB_API}/repos/${repo}/readme`, {
+      const res = await fetch(`${GITHUB_API}/repos/${repo}/contents/${encodeURIComponent(path)}`, {
         headers: {
           Accept: "application/vnd.github.raw",
           Authorization: `Bearer ${this.token}`,
         },
       });
       if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`README fetch failed: ${res.status}`);
+      if (!res.ok) throw new Error(`Fetch ${path} failed: ${res.status}`);
       return { text: await res.text() };
     } catch {
       return null;
     }
+  }
+
+  hasCommunityFile(repo: string, path: string): Promise<boolean> {
+    return this.getRawFile(repo, path).then((r) => r !== null);
+  }
+
+  getWorkflowJobs(repo: string, runId: number) {
+    return this.request<WorkflowJobsResponse>(
+      `/repos/${repo}/actions/runs/${runId}/jobs`,
+    );
+  }
+
+  searchIssues(repo: string, query: string, perPage = 10) {
+    const q = encodeURIComponent(`repo:${repo} is:issue ${query}`);
+    return this.request<SearchIssuesResponse>(`/search/issues?q=${q}&per_page=${perPage}`);
   }
 
   async urlIsAlive(url: string, timeoutMs = 8000): Promise<{ ok: boolean; status: number }> {
@@ -168,4 +188,25 @@ export interface Comment {
   id: number;
   html_url: string;
   body: string;
+}
+
+export interface WorkflowJobsResponse {
+  total_count: number;
+  jobs: Array<{
+    id: number;
+    name: string;
+    status: string;
+    conclusion: string | null;
+    steps?: Array<{ name: string; conclusion: string | null; number: number }>;
+  }>;
+}
+
+export interface SearchIssuesResponse {
+  total_count: number;
+  items: Array<{
+    number: number;
+    title: string;
+    state: string;
+    html_url: string;
+  }>;
 }
