@@ -18,6 +18,8 @@ RepoMedic is the maintenance agent every maintainer wishes they had: it scans yo
                            └──────────────────┘
 ```
 
+![RepoMedic architecture](docs/architecture.svg)
+
 ## What it does
 
 | Capability | How RepoMedic uses it |
@@ -42,8 +44,13 @@ RepoMedic is the maintenance agent every maintainer wishes they had: it scans yo
 | `audit_dependencies` | free | Deprecated packages + majors-behind, via npm registry |
 | `check_community_health` | free | LICENSE/CONTRIBUTING/CoC/SECURITY/templates scoring |
 | `search_similar_issues` | free | Dedupe check before proposing a new issue |
+| `bus_factor` | free | Contribution concentration -> maintenance-risk verdict |
+| `release_health` | free | Drift since latest release, cadence verdict |
+| `triage_priorities` | free | **Flagship composite**: severity-ranked action list across all scanners |
 | `file_issue` | 🔒 approval | Opens an issue — pauses for Allow/Deny |
 | `post_comment` | 🔒 approval | Comments on an issue — pauses for Allow/Deny |
+
+Programmatic inventory: `GET /tools` on any deployment returns this list as JSON.
 
 ## Advanced usage
 
@@ -149,3 +156,4 @@ Built for The Agent Harness Hackathon by Aniruddha Adak with AI coding assistant
 ## License
 
 MIT
+

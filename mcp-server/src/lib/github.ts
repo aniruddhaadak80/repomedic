@@ -103,6 +103,30 @@ export class GithubClient {
     return this.request<SearchIssuesResponse>(`/search/issues?q=${q}&per_page=${perPage}`);
   }
 
+  listContributors(repo: string, perPage = 100) {
+    return this.request<Contributor[]>(
+      `/repos/${repo}/contributors?per_page=${perPage}`,
+    );
+  }
+
+  async getLatestRelease(repo: string): Promise<Release | null> {
+    try {
+      return await this.request<Release>(`/repos/${repo}/releases/latest`);
+    } catch {
+      return null; // 404 = repo has no releases yet
+    }
+  }
+
+  async compareWithHead(repo: string, baseTag: string): Promise<CompareSummary | null> {
+    try {
+      return await this.request<CompareSummary>(
+        `/repos/${repo}/compare/${encodeURIComponent(baseTag)}...HEAD`,
+      );
+    } catch {
+      return null;
+    }
+  }
+
   async urlIsAlive(url: string, timeoutMs = 8000): Promise<{ ok: boolean; status: number }> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -209,4 +233,21 @@ export interface SearchIssuesResponse {
     state: string;
     html_url: string;
   }>;
+}
+
+export interface Contributor {
+  login: string;
+  contributions: number;
+}
+
+export interface Release {
+  tag_name: string;
+  name: string | null;
+  published_at: string;
+  html_url: string;
+}
+
+export interface CompareSummary {
+  total_commits: number;
+  commits: Array<{ message: string }>;
 }

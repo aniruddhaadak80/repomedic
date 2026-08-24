@@ -114,9 +114,9 @@ export const LANDING_HTML = `<!doctype html>
   </p>
 
   <div class="stats">
-    <div class="stat"><div class="n">10</div><div class="l">MCP tools</div></div>
+    <div class="stat"><div class="n">13</div><div class="l">MCP tools</div></div>
     <div class="stat"><div class="n">4</div><div class="l">safety layers</div></div>
-    <div class="stat"><div class="n">23</div><div class="l">tests, all green</div></div>
+    <div class="stat"><div class="n">32</div><div class="l">tests, all green</div></div>
     <div class="stat"><div class="n">800+</div><div class="l">PRs behind the idea</div></div>
   </div>
 
@@ -131,6 +131,9 @@ export const LANDING_HTML = `<!doctype html>
       <div class="tool"><span class="free">read-only</span><code>audit_dependencies</code><span>deprecated & majors-behind via npm registry</span></div>
       <div class="tool"><span class="free">read-only</span><code>check_community_health</code><span>LICENSE · CONTRIBUTING · CoC scoring</span></div>
       <div class="tool"><span class="free">read-only</span><code>search_similar_issues</code><span>dedupe before filing anything new</span></div>
+      <div class="tool"><span class="free">read-only</span><code>bus_factor</code><span>contribution concentration risk</span></div>
+      <div class="tool"><span class="free">read-only</span><code>release_health</code><span>drift since latest release</span></div>
+      <div class="tool"><span class="free">read-only</span><code>triage_priorities</code><span>flagship: ranked action list</span></div>
       <div class="tool locked"><span class="lock">🔒 needs Allow</span><code>file_issue</code><span>opens an issue — turn freezes first</span></div>
       <div class="tool locked"><span class="lock">🔒 needs Allow</span><code>post_comment</code><span>comments on an issue — turn freezes first</span></div>
     </div>
