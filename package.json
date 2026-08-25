@@ -22,7 +22,7 @@
     "test": "npm test -w mcp-server"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^7.0.2"
   },
   "keywords": [
     "agent",
