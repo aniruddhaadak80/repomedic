@@ -17,6 +17,10 @@
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "4.63.1"
   },
+  "overrides": {
+    "hono": "4.13.9",
+    "qs": "6.16.0"
+  },
   "scripts": {
     "setup": "npm install && npm run build -w mcp-server && npm test -w mcp-server",
     "test": "npm test -w mcp-server"
