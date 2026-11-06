@@ -35,7 +35,9 @@ describe("npmLatest lookup (via advanced tools registry calls)", () => {
       if (url.includes("registry.npmjs.org/react")) {
         return new Response(JSON.stringify({ version: "19.0.0" }), { status: 200 });
       }
-      if (url.includes("api.github.com") && url.includes("package.json")) {
+      let parsed: URL | null = null;
+      try { parsed = new URL(url); } catch { /* fall through */ }
+      if (parsed && parsed.hostname === "api.github.com" && parsed.pathname.endsWith("package.json")) {
         return new Response(
           JSON.stringify({ dependencies: { "left-pad": "^1.3.0", react: "^19.0.0" } }),
           { status: 200 },
